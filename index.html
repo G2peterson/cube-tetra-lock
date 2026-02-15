@@ -30,87 +30,42 @@
     <br>
     P-bar tick, 2.0 ps, cΔt = 0.6 mm, model only
   </div>
-
-  <script type="module">
+<script type="module">
 import * as THREE from "https://unpkg.com/three@0.160.0/build/three.module.js";
-    import { OrbitControls } from "https://unpkg.com/three@0.160.0/examples/jsm/controls/OrbitControls.js";
+import { OrbitControls } from "https://unpkg.com/three@0.160.0/examples/jsm/controls/OrbitControls.js";
 
-    const scene = new THREE.Scene();
+const scene = new THREE.Scene();
 
-    const camera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.1, 100);
-    camera.position.set(2.2, 1.8, 2.2);
+const camera = new THREE.PerspectiveCamera(
+  60,
+  window.innerWidth / window.innerHeight,
+  0.1,
+  100
+);
+camera.position.set(2.2, 1.8, 2.2);
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(innerWidth, innerHeight);
-    document.body.appendChild(renderer.domElement);
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+document.body.appendChild(renderer.domElement);
 
-    const controls = new OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true;
+const controls = new OrbitControls(camera, renderer.domElement);
 
-    scene.add(new THREE.AmbientLight(0xffffff, 0.7));
-    const dir = new THREE.DirectionalLight(0xffffff, 0.7);
-    dir.position.set(5, 5, 5);
-    scene.add(dir);
+const geometry = new THREE.BoxGeometry(1, 1, 1);
+const material = new THREE.MeshBasicMaterial({ wireframe: true });
+const cube = new THREE.Mesh(geometry, material);
+scene.add(cube);
 
-    scene.add(new THREE.AxesHelper(1.5));
+function animate() {
+  requestAnimationFrame(animate);
+  controls.update();
+  renderer.render(scene, camera);
+}
+animate();
 
-    // Cube wireframe, side length 2 (corners at ±1)
-    const cubeWire = new THREE.LineSegments(
-      new THREE.WireframeGeometry(new THREE.BoxGeometry(2, 2, 2)),
-      new THREE.LineBasicMaterial()
-    );
-    scene.add(cubeWire);
-
-    // Origin marker
-    const origin = new THREE.Mesh(
-      new THREE.SphereGeometry(0.04, 16, 16),
-      new THREE.MeshStandardMaterial()
-    );
-    origin.position.set(0, 0, 0);
-    scene.add(origin);
-
-    // Tetra nodes, even parity cube corners
-    const L = 1;
-    const pts = {
-      "T1+++": new THREE.Vector3( L, L, L),
-      "T2+--": new THREE.Vector3( L, -L, -L),
-      "T3-+-": new THREE.Vector3(-L, L, -L),
-      "T4--+": new THREE.Vector3(-L, -L, L),
-    };
-
-    // Node spheres
-    const nodeMat = new THREE.MeshStandardMaterial();
-    for (const v of Object.values(pts)) {
-      const s = new THREE.Mesh(new THREE.SphereGeometry(0.06, 18, 18), nodeMat);
-      s.position.copy(v);
-      scene.add(s);
-    }
-
-    // Tetra edges (all pairs)
-    const positions = [];
-    const keys = Object.keys(pts);
-    for (let i = 0; i < keys.length; i++) {
-      for (let j = i + 1; j < keys.length; j++) {
-        const a = pts[keys[i]], b = pts[keys[j]];
-        positions.push(a.x, a.y, a.z, b.x, b.y, b.z);
-      }
-    }
-    const edgeGeo = new THREE.BufferGeometry();
-    edgeGeo.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
-    scene.add(new THREE.LineSegments(edgeGeo, new THREE.LineBasicMaterial()));
-
-    addEventListener("resize", () => {
-      camera.aspect = innerWidth / innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(innerWidth, innerHeight);
-    });
-
-    function animate() {
-      requestAnimationFrame(animate);
-      controls.update();
-      renderer.render(scene, camera);
-    }
-    animate();
-  </script>
-</body>
+window.addEventListener("resize", () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+</script>
 </html>
